@@ -4,6 +4,7 @@ on:
     paths: ['uploads/*.zip']
 permissions:
   contents: write
+  workflows: write
 jobs:
   unzip:
     runs-on: ubuntu-latest
