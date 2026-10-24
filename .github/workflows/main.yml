@@ -1,0 +1,75 @@
+name: unzip
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "uploads/*.zip"
+  workflow_dispatch:
+
+# Antre, jangan jalan paralel dan jangan saling membatalkan
+concurrency:
+  group: unzip-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PUSH_TOKEN }}   # penuh, supaya pull --rebase aman
+
+      - name: Unzip, commit, push (dengan retry)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Keluar tenang kalau tidak ada zip (mis. run dipicu penghapusan zip)
+          shopt -s nullglob
+          zips=(uploads/*.zip)
+          if [ ${#zips[@]} -eq 0 ]; then
+            echo "Tidak ada zip di uploads/, selesai."
+            exit 0
+          fi
+
+          rm -rf /tmp/x && mkdir -p /tmp/x
+          unzip -q "${zips[@]}" -d /tmp/x
+          rm -f "${zips[@]}"
+
+          # Salin isi folder root di dalam zip ke root repo
+          rsync -a /tmp/x/*/ ./
+
+          rm -f omalauncher-release.jks keystore.properties
+
+          git config user.name  github-actions
+          git config user.email github-actions@users.noreply.github.com
+
+          git add -A
+          git add -f app/src/main/jniLibs || true
+
+          if git diff --cached --quiet; then
+            echo "Tidak ada perubahan untuk di-commit."
+            exit 0
+          fi
+
+          git commit -m "unzip"
+
+          # Retry: kalau ditolak (fetch first), tarik + rebase lalu push lagi
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo "Push berhasil (percobaan $i)."
+              exit 0
+            fi
+            echo "Push ditolak (percobaan $i), pull --rebase lalu coba lagi..."
+            git pull --rebase --no-edit origin main
+            sleep $((i * 2))
+          done
+
+          echo "::error::Gagal push setelah 5 percobaan."
+          exit 1
+          
