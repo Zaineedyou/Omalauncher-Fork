@@ -35,7 +35,8 @@ This is `SimonSchubert/omalauncher` at the commit recorded in your APK (`ccd9d7f
 - your APK's changes: `assets/widgets/drawer.owl`, the transparent `Theme.Omalauncher.Window`, and the permissions the
   APK declared that upstream does not (storage, media, vibrate, audio settings);
 - liquid glass: the launcher's surfaces are translucent over the wallpaper (`Palette.glass`, `pane`, `card` and
-  `control` in `ui/Theme.kt`, set by `glass.opacity`); the theme's own colors stay in charge of every other color;
+  `control` in `ui/Theme.kt`, set by `glass.opacity`, and by `screens.*` and `drawer.*` for the full-screen panels and the
+  app drawer); the theme's own colors stay in charge of every other color;
 - `CrashLog`: an uncaught exception is written to Download/Omalauncher, so a force close comes with its stack trace;
 - `android.audio` and `audio(...)` (owl level 13): the audio other apps play, as levels per band
   (`widgets/runtime/Audio.kt`, `Spectrum.kt`, `AudioCaptureService.kt`, `AudioPermissionActivity.kt`).

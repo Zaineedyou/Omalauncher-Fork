@@ -8,8 +8,12 @@ Dates are when the build was uploaded to Play.
 
 - Liquid glass, through the whole launcher: tiles, panels, menus, dialogs and fields are translucent over the wallpaper
   (the glass is lit from above and its edge catches the light), in the colors of the Omarchy theme in use. How much of
-  the wallpaper shows is `glass.opacity` in style.toml, or "glass" in the Style menu (clear, glass, frosted); corners
+  the wallpaper shows is `glass.opacity` in style.toml, or "glass" in the Style menu, a 0 to 100% stepper; corners
   are round by default (`corners.scale`).
+- The settings screens and the app drawer follow the style too: `screens.opacity`, `screens.background` and
+  `screens.border`, and `drawer.opacity`, `drawer.background`, `drawer.border` and `drawer.border-width`, each with
+  its stepper in the Style menu where it's a number. owl's `surface` is glass now, so the drawer's cells, search and
+  tabs show the wallpaper; `android.drawer` gives drawer.owl its `border` and `borderWidth`.
 - A terminal could close the moment it opened when no theme had been applied yet: foot's config includes the theme's
   foot.ini, and without that file foot refuses to start. An empty one is there from the start now.
 - A crash leaves its stack trace in Download/Omalauncher.

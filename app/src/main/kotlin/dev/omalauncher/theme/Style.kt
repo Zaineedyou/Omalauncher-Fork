@@ -148,6 +148,12 @@ class Style(
         /** How much tiles and the system bars' bands cover the wallpaper: under half, so it shows through them. */
         const val GLASS = 0.46
 
+        /** How much full-screen panels cover it: a little more, as a panel is mostly text. */
+        const val SCREEN = 0.52
+
+        /** How much the app drawer covers it: more still, as home's widgets behind it made icons hard to read. */
+        const val DRAWER = 0.70
+
         val THEME = Setting.Name("theme", "The Omarchy theme, by its directory name in ~/.local/share/omarchy/themes or ~/.config/omarchy/themes (yours win).")
         val BACKGROUND = Setting.Name("background", "A file name from the theme's backgrounds/ or ~/.config/omarchy/backgrounds/<theme>/. Unset: the theme's first.")
 
@@ -169,6 +175,15 @@ class Style(
 
         val SCREEN_GAPS_OUT = Setting.Number("screens.gaps-out", 6.0, 0.0..48.0, "Space in dp from full-screen panels (settings, style, the stores) to the screen's edges.")
         val SCREEN_BORDER_WIDTH = Setting.Number("screens.border-width", 2.0, 0.0..8.0, "How thick full-screen panels' outlines are, in dp.")
+        val SCREEN_OPACITY =
+            Setting.Number("screens.opacity", SCREEN, 0.0..1.0, "How much full-screen panels (settings, style, the stores, files, the editor) cover the wallpaper: 0 clear, 1 solid.")
+        val SCREEN_BACKGROUND = Setting.Color("screens.background", "The fill of full-screen panels: \"theme\" is the theme's background color.")
+        val SCREEN_BORDER = Setting.Color("screens.border", "The outline of full-screen panels: \"theme\" is the theme's accent, \"none\" draws none.", noneAllowed = true)
+
+        val DRAWER_OPACITY = Setting.Number("drawer.opacity", DRAWER, 0.0..1.0, "How much the app drawer, which swiping up opens, covers the wallpaper: 0 clear, 1 solid.")
+        val DRAWER_BACKGROUND = Setting.Color("drawer.background", "The fill behind the app drawer: \"theme\" is the theme's background color.")
+        val DRAWER_BORDER = Setting.Color("drawer.border", "The line around the app drawer's list: \"theme\" is the theme's border color, \"none\" draws none.", noneAllowed = true)
+        val DRAWER_BORDER_WIDTH = Setting.Number("drawer.border-width", 1.0, 0.0..8.0, "How thick the line around the app drawer's list is, in dp.")
 
         val MONOCHROME_ICONS = Setting.Flag("icons.monochrome", false, "App icons as silhouettes in the accent color, as on Omarchy, rather than in their own colors.")
 
@@ -244,7 +259,8 @@ object StyleFile {
     val ALL: List<Setting<*>> =
         with(Style) {
             listOf(THEME, BACKGROUND, FONT, APP_TILES, RECENT_APPS, COLUMNS, FORCE_SINGLE_PAGE, GAPS_IN, GAPS_OUT, TILE_BORDER_WIDTH, TILE_BORDER, TILE_BORDER_FOCUSED) +
-                listOf(SCREEN_GAPS_OUT, SCREEN_BORDER_WIDTH, MONOCHROME_ICONS, CORNER_SCALE, GLASS_OPACITY) +
+                listOf(SCREEN_GAPS_OUT, SCREEN_BORDER_WIDTH, SCREEN_OPACITY, SCREEN_BACKGROUND, SCREEN_BORDER, MONOCHROME_ICONS, CORNER_SCALE, GLASS_OPACITY) +
+            listOf(DRAWER_OPACITY, DRAWER_BACKGROUND, DRAWER_BORDER, DRAWER_BORDER_WIDTH) +
                 listOf(STATUS_BAR_SHOWN) + STATUS_BAR.all + NAVIGATION_BAR.all + listOf(TERMINAL_FONT, TERMINAL_TEXT, SWIPE_UP, SWIPE_DOWN)
         }
 

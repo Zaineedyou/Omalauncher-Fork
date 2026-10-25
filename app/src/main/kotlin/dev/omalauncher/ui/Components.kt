@@ -109,7 +109,7 @@ fun PanelFrame(
     Column(
         modifier
             .fillMaxSize()
-            .frame(LauncherStyle.panelBorderWidth, Palette.accent, Palette.pane, radius = 20.dp)
+            .frame(if (LauncherStyle.screenBorder == null) 0.dp else LauncherStyle.panelBorderWidth, LauncherStyle.screenBorder ?: Palette.accent, Palette.pane, radius = 20.dp)
             .padding(PanelPadding),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {

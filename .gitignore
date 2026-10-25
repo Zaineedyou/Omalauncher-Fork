@@ -17,3 +17,6 @@ fastlane/README.md
 keystore.properties
 # captured by scripts/collage-captures.sh
 store/collage/raw/
+
+omalauncher-release.jks
+keystore.properties

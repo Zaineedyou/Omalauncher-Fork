@@ -25,6 +25,7 @@ import android.view.Display
 import android.view.HapticFeedbackConstants
 import android.view.View
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.ImageBitmap
 import dev.omalauncher.BuildConfig
 import android.os.Process
@@ -53,6 +54,7 @@ import dev.omalauncher.widgets.lang.Builtins
 import dev.omalauncher.widgets.lang.KeyNames
 import dev.omalauncher.widgets.lang.Lst
 import dev.omalauncher.widgets.lang.Null
+import dev.omalauncher.widgets.lang.Col
 import dev.omalauncher.widgets.lang.Num
 import dev.omalauncher.widgets.lang.Obj
 import dev.omalauncher.widgets.lang.Str
@@ -449,7 +451,7 @@ class WidgetServices(
         )
 
     /**
-     * The drawer for `source d = android.drawer`: `{apps, linux, monochrome, work, updates}`. `apps` is every app in the drawer's
+     * The drawer for `source d = android.drawer`: `{apps, linux, monochrome, work, updates, border, borderWidth}`. `apps` is every app in the drawer's
      * order (owl apps, Linux apps, shortcuts, Android apps, then the work profile's shortcuts and apps), each
      * `{key, kind, name, label, icon, hasIcon, initials, profile, alias, paused, actions, score, last}`:
      * - `label` what screen readers say for it ("WhatsApp work"), for an Image's `label`; `profile` as in `android.apps`; `alias` what search matches besides the name ("WhatsApp work");
@@ -457,7 +459,8 @@ class WidgetServices(
      * - `hasIcon` whether `icon` draws anything yet; without, the drawer shows `initials` on a badge, as it does a
      *   silhouette when `monochrome`.
      * `linux` is "installed", "installing" or "missing"; `work` is `{paused}` while there's a work profile, else null;
-     * `updates` counts the system updates waiting.
+     * `updates` counts the system updates waiting; `border` and `borderWidth` are the line around the list as the style
+     * has it (`drawer.border`, `drawer.border-width`), a color and dp.
      */
     private fun drawer(): Value {
         val apps = runtime.androidApps
@@ -487,7 +490,19 @@ class WidgetServices(
                 )
             }
         val work = if (apps.workProfiles.isEmpty()) Null else Obj(mapOf("paused" to bool(apps.workProfiles.any { apps.paused(it) })))
-        return Obj(mapOf("apps" to Lst(list), "linux" to Str(linuxWord(runtime.bootstrap.state.value)), "monochrome" to bool(LauncherStyle.monochromeIcons), "work" to work, "updates" to Num((runtime.updates.pending?.count ?: 0).toDouble())))
+        // The line around the list, as drawer.border and drawer.border-width in style.toml have it; the list is the file's.
+        val line = LauncherStyle.drawerBorder
+        return Obj(
+            mapOf(
+                "apps" to Lst(list),
+                "linux" to Str(linuxWord(runtime.bootstrap.state.value)),
+                "monochrome" to bool(LauncherStyle.monochromeIcons),
+                "work" to work,
+                "updates" to Num((runtime.updates.pending?.count ?: 0).toDouble()),
+                "border" to Col(null, (line ?: androidx.compose.ui.graphics.Color.Transparent).toArgb()),
+                "borderWidth" to Num(LauncherStyle.drawerBorderWidth.value.toDouble()),
+            ),
+        )
     }
 
     /** Android hides the battery from the guest (/sys/class/power_supply), so expose it here. */

@@ -134,8 +134,8 @@ panel "app drawer" {
   Column {
     gap: 0
     padding: [12, 0]
-    border: 1
-    borderColor: border
+    border: d.borderWidth ?? 1
+    borderColor: d.border ?? border
     radius: 20 * corners
     Row {
       align: center

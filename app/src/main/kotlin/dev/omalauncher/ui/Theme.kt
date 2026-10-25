@@ -106,8 +106,8 @@ object Palette {
     /** The translucent fill of tiles, bars and rails over the wallpaper. */
     val glass get() = background.copy(alpha = opacity)
 
-    /** The fill of a full-screen panel: a little more cover than a tile, as a panel is mostly text. */
-    val pane get() = background.copy(alpha = (opacity + 0.06f).coerceIn(0f, 1f))
+    /** The fill of a full-screen panel, from the style's `screens.*`: [LauncherStyle.screenFill]. */
+    val pane get() = LauncherStyle.screenFill
 
     /** The fill of menus, dialogs and notices, which sit over other content and so cover more of it. */
     val card get() = background.copy(alpha = (opacity + 0.30f).coerceIn(0f, 0.94f))
@@ -149,6 +149,33 @@ object LauncherStyle {
 
     /** How thick full-screen panels' outlines are; 0 for none. */
     val panelBorderWidth: Dp get() = style[Style.SCREEN_BORDER_WIDTH].toFloat().dp
+
+    /** The fill of full-screen panels (settings, style, the stores, files, the editor): the style's color at its opacity. */
+    val screenFill: Color get() = color(style[Style.SCREEN_BACKGROUND], Palette.background).copy(alpha = style[Style.SCREEN_OPACITY].toFloat())
+
+    /** The outline of full-screen panels, or null for none. */
+    val screenBorder: Color?
+        get() =
+            when (val spec = style[Style.SCREEN_BORDER]) {
+                ColorSpec.NONE -> null
+                ColorSpec.THEME -> Palette.accent
+                else -> color(spec, Palette.accent)
+            }
+
+    /** The fill behind the app drawer: the style's color at its opacity. */
+    val drawerFill: Color get() = color(style[Style.DRAWER_BACKGROUND], Palette.background).copy(alpha = style[Style.DRAWER_OPACITY].toFloat())
+
+    /** The line around the drawer's list, or null for none. */
+    val drawerBorder: Color?
+        get() =
+            when (val spec = style[Style.DRAWER_BORDER]) {
+                ColorSpec.NONE -> null
+                ColorSpec.THEME -> Palette.border
+                else -> color(spec, Palette.border)
+            }
+
+    /** How thick that line is; 0 for none. */
+    val drawerBorderWidth: Dp get() = if (drawerBorder == null) 0.dp else style[Style.DRAWER_BORDER_WIDTH].toFloat().dp
 
     /** How thick the focused tile's outline is: never so thin it can't be told apart. */
     val focusWidth: Dp get() = maxOf(borderWidth, 2.dp)

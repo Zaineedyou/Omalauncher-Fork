@@ -103,6 +103,40 @@ class StyleTest {
         assertEquals(0.7, StyleFile.decode(mapOf("glass.opacity" to 0.7)).style[Style.GLASS_OPACITY], 0.0)
     }
 
+    @Test fun screensAndTheDrawerHaveTheirOwnGlass() {
+        val s = Style()
+        assertEquals(Style.SCREEN, s[Style.SCREEN_OPACITY], 0.0)
+        assertEquals(Style.DRAWER, s[Style.DRAWER_OPACITY], 0.0)
+        assertTrue(Style.DRAWER > Style.SCREEN && Style.SCREEN > Style.GLASS)
+        assertEquals(ColorSpec.THEME, s[Style.SCREEN_BACKGROUND])
+        assertEquals(ColorSpec.THEME, s[Style.DRAWER_BORDER])
+        assertEquals(1.0, s[Style.DRAWER_BORDER_WIDTH], 0.0)
+        assertTrue(Style.SCREEN_OPACITY in StyleFile.ALL && Style.DRAWER_OPACITY in StyleFile.ALL && Style.DRAWER_BORDER_WIDTH in StyleFile.ALL)
+        val t = linkedMapOf<String, Any>(
+            "screens.opacity" to 0.3, "screens.border" to "none", "screens.background" to "#101820",
+            "drawer.opacity" to 1.0, "drawer.border" to "color4", "drawer.border-width" to 3.0, "drawer.background" to "accent",
+        )
+        val decoded = StyleFile.decode(t)
+        assertEquals(emptyList<String>(), decoded.problems)
+        assertEquals(0.3, decoded.style[Style.SCREEN_OPACITY], 0.0)
+        assertEquals(ColorSpec.NONE, decoded.style[Style.SCREEN_BORDER])
+        assertEquals("#101820", decoded.style[Style.SCREEN_BACKGROUND])
+        assertEquals(1.0, decoded.style[Style.DRAWER_OPACITY], 0.0)
+        assertEquals("color4", decoded.style[Style.DRAWER_BORDER])
+        assertEquals(3.0, decoded.style[Style.DRAWER_BORDER_WIDTH], 0.0)
+    }
+
+    @Test fun screensAndTheDrawerRefuseWhatIsOutOfRange() {
+        val decoded = StyleFile.decode(mapOf("screens.opacity" to 1.5, "drawer.opacity" to -0.2, "drawer.border-width" to 30.0, "drawer.border" to "glow", "screens.background" to "none"))
+        assertEquals(5, decoded.problems.size)
+        assertEquals(Style.SCREEN, decoded.style[Style.SCREEN_OPACITY], 0.0)
+        assertEquals(Style.DRAWER, decoded.style[Style.DRAWER_OPACITY], 0.0)
+        assertEquals(1.0, decoded.style[Style.DRAWER_BORDER_WIDTH], 0.0)
+        assertEquals(ColorSpec.THEME, decoded.style[Style.DRAWER_BORDER])
+        // A background has to be a color: "none" is for outlines.
+        assertEquals(ColorSpec.THEME, decoded.style[Style.SCREEN_BACKGROUND])
+    }
+
     @Test fun eachBarHasItsOwnBorderWidth() {
         val decoded = StyleFile.decode(mapOf("status-bar.border-width" to 0.0, "navigation-bar.border-width" to 9.0))
         assertEquals(0.0, decoded.style[Style.STATUS_BAR.borderWidth], 0.0)

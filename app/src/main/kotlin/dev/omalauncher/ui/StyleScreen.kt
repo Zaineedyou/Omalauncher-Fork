@@ -84,6 +84,7 @@ import dev.omalauncher.theme.ThemeDownload
 import dev.omalauncher.theme.ThemeStore
 import dev.omalauncher.theme.Toml
 import java.io.File
+import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlinx.coroutines.Dispatchers
@@ -128,7 +129,7 @@ fun StyleScreen(
             CountOption("columns", Style.COLUMNS, style)
             Flag("pages", "one", "auto", style, Style.FORCE_SINGLE_PAGE)
             NumberOption("corners", Corners.entries.map { it.label to it.scale.toDouble() }, Style.CORNER_SCALE, style)
-            NumberOption("glass", listOf("clear" to 0.28, "glass" to Style.GLASS, "frosted" to 0.68), Style.GLASS_OPACITY, style)
+            PercentStepper("glass", style, Style.GLASS_OPACITY)
             HomePreview(runtime)
             // Like Hyprland's gaps_in, gaps_out and border_size; the colors are in style.toml.
             Heading("widgets")
@@ -139,6 +140,11 @@ fun StyleScreen(
             Heading("screens")
             Stepper("gaps out", style, Style.SCREEN_GAPS_OUT)
             Stepper("border width", style, Style.SCREEN_BORDER_WIDTH)
+            PercentStepper("opacity", style, Style.SCREEN_OPACITY)
+            // The app drawer swiping up opens: its fill and the line around its list, which the colors in style.toml set too.
+            Heading("app drawer")
+            PercentStepper("opacity", style, Style.DRAWER_OPACITY)
+            Stepper("border width", style, Style.DRAWER_BORDER_WIDTH)
             // Both bars at once; style.toml can set them apart. Background is the band behind their icons.
             Heading("system bars")
             Flag("status bar", "shown", "hidden", style, Style.STATUS_BAR_SHOWN)
@@ -647,6 +653,44 @@ private fun Stepper(
         if (all.any { style.style[it] != it.default }) BracketAction("reset", Palette.muted) { style.update { it.with(all) { s -> s.default } } }
     }
     if (style.style.common(all) == null) OptionHint("they differ in style.toml; a step sets them all", Modifier.padding(bottom = 4.dp))
+}
+
+/**
+ * A [Style] fraction as a percentage from 0 to 100, stepped by 5% from the nearest step: 46% goes to 45% or 50%.
+ * Reset shows once it's off its default.
+ */
+@Composable
+private fun PercentStepper(
+    label: String,
+    style: StyleStore,
+    setting: Setting.Number,
+) {
+    val value = style.style[setting]
+    // In twentieths, so a step is a whole number; a value between two steps goes to the one in the direction asked.
+    val twentieths = value * 20
+    val onStep = abs(twentieths - Math.round(twentieths)) < 1e-6
+    val stepDown = if (onStep) Math.round(twentieths) - 1 else floor(twentieths).toLong()
+    val stepUp = if (onStep) Math.round(twentieths) + 1 else ceil(twentieths).toLong()
+    fun set(twentieths: Long) = style.update { it.with(setting, (twentieths / 20.0).coerceIn(setting.range)) }
+    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        OptionLabel(label)
+        Row(Modifier.frame(1.dp, Palette.border, radius = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            val down = value > setting.range.start
+            val up = value < setting.range.endInclusive
+            BasicText(
+                "−",
+                Modifier.clickable(enabled = down) { set(stepDown) }.padding(horizontal = 16.dp, vertical = 8.dp),
+                style = Mono.copy(color = if (down) Palette.foreground else Palette.muted),
+            )
+            BasicText("${Math.round(value * 100)}%", Modifier.widthIn(min = 64.dp), style = Mono.copy(textAlign = TextAlign.Center), softWrap = false)
+            BasicText(
+                "+",
+                Modifier.clickable(enabled = up) { set(stepUp) }.padding(horizontal = 16.dp, vertical = 8.dp),
+                style = Mono.copy(color = if (up) Palette.foreground else Palette.muted),
+            )
+        }
+        if (value != setting.default) BracketAction("reset", Palette.muted) { style.update { it.with(setting, setting.default) } }
+    }
 }
 
 /** [Style] flags as a choice of two, [on] first, set together. */

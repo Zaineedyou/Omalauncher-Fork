@@ -315,7 +315,8 @@ class WidgetInstance(
             "foreground" -> Palette.foreground
             "background" -> Palette.background
             "muted" -> Palette.muted
-            "surface" -> Palette.surface
+            // Glass, like every surface in the launcher: it follows glass.opacity, so what a widget fills with it shows the wallpaper.
+            "surface" -> Palette.control
             "border" -> Palette.border
             "white" -> androidx.compose.ui.graphics.Color.White
             "black" -> androidx.compose.ui.graphics.Color.Black
